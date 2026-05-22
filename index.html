@@ -1,208 +1,331 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Pricelist</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: #f4f6f9;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    /* HEADER */
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 15px 25px;
-      background: #ffffff;
-      border-bottom: 1px solid #e5e7eb;
-    }
+<title>Catalogue Pricelist</title>
 
-    .logo img {
-      height: 45px;
-    }
+<link rel="preconnect" href="https://script.google.com">
+<link rel="dns-prefetch" href="https://script.google.com">
 
-    .brandName {
-      font-size: 18px;
-      font-weight: 600;
-      color: #1f2937;
-    }
+<style>
 
-    /* TITLE */
-    .catalogueTitle {
-      text-align: center;
-      font-size: 32px;
-      font-weight: 700;
-      margin: 20px 0 10px;
-      color: #111827;
-    }
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
 
-    /* CARD CONTAINER */
-    .container {
-      padding: 20px;
-      max-width: 1100px;
-      margin: auto;
-    }
+body{
+  font-family:Arial,sans-serif;
+  background:#f5f5f5;
+  color:#222;
+}
 
-    .card {
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-      overflow: hidden;
-    }
+.container{
+  width:100%;
+  max-width:1400px;
+  margin:auto;
+  padding:15px;
+}
 
-    /* TABLE */
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
+.header{
+  background:white;
+  border-radius:12px;
+  padding:20px;
+  margin-bottom:20px;
 
-    th, td {
-      padding: 16px;
-      text-align: center;
-    }
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:20px;
+  flex-wrap:wrap;
 
-    th {
-      background: #111827;
-      color: white;
-      font-weight: 600;
-      letter-spacing: 0.5px;
-    }
+  box-shadow:0 2px 10px rgba(0,0,0,0.08);
+}
 
-    tr {
-      border-bottom: 1px solid #f1f1f1;
-    }
+.leftHeader{
+  display:flex;
+  align-items:center;
+  gap:15px;
+}
 
-    tr:hover {
-      background: #fafafa;
-    }
+#brandLogo{
+  width:80px;
+  height:80px;
+  object-fit:contain;
+}
 
-    /* RESPONSIVE */
-    @media (max-width: 768px) {
-      .catalogueTitle {
-        font-size: 22px;
-      }
+.headerText{
+  display:flex;
+  flex-direction:column;
+}
 
-      th, td {
-        padding: 10px;
-        font-size: 14px;
-      }
-    }
-  </style>
+#catalogueName{
+  font-size:28px;
+  font-weight:bold;
+  margin-bottom:5px;
+}
+
+#brandName{
+  font-size:18px;
+  color:#666;
+}
+
+.tableWrap{
+  background:white;
+  border-radius:12px;
+  overflow:auto;
+  box-shadow:0 2px 10px rgba(0,0,0,0.08);
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  table-layout:fixed;
+}
+
+th{
+  background:#111827;
+  color:white;
+  padding:14px;
+  text-align:center;
+}
+
+td{
+  padding:14px;
+  border-bottom:1px solid #ddd;
+  text-align:center;
+  word-wrap:break-word;
+}
+
+tr:hover{
+  background:#f9f9f9;
+}
+
+.loading{
+  text-align:center;
+  padding:30px;
+  font-size:18px;
+}
+
+@media(max-width:768px){
+
+  #catalogueName{
+    font-size:22px;
+  }
+
+  #brandName{
+    font-size:16px;
+  }
+
+  th,td{
+    padding:10px;
+    font-size:14px;
+  }
+
+  #brandLogo{
+    width:60px;
+    height:60px;
+  }
+
+}
+
+</style>
+
 </head>
 
 <body>
 
-<div class="header">
-  <div class="logo">
-    <img id="brandLogo" src="">
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="header">
+
+    <div class="leftHeader">
+
+      <img id="brandLogo" src="" alt="Logo">
+
+      <div class="headerText">
+
+        <div id="catalogueName">
+          Loading Catalogue...
+        </div>
+
+        <div id="brandName"></div>
+
+      </div>
+
+    </div>
+
   </div>
 
-  <div class="brandName" id="brandName">Loading...</div>
-</div>
+  <!-- TABLE -->
+  <div class="tableWrap">
 
-<div class="catalogueTitle" id="catalogueName">Loading...</div>
-
-<div class="container">
-  <div class="card">
     <table>
+
       <thead>
         <tr>
           <th>Variant</th>
           <th>HSN</th>
-          <th>GST %</th>
-          <th>RRP (₹)</th>
+          <th>GST</th>
+          <th>RRP</th>
         </tr>
       </thead>
-      <tbody id="data"></tbody>
+
+      <tbody id="data">
+
+        <tr>
+          <td colspan="4" class="loading">
+            Loading catalogue...
+          </td>
+        </tr>
+
+      </tbody>
+
     </table>
+
   </div>
+
 </div>
 
 <script>
-const VARIANT_API = "https://sheetdb.io/api/v1/tbkom437rmn5o?sheet=Variants";
-const CATALOGUE_API = "https://sheetdb.io/api/v1/tbkom437rmn5o?sheet=Catalogues";
-const BRAND_API = "https://sheetdb.io/api/v1/tbkom437rmn5o?sheet=Brand";
 
-function clean(val) {
-  return (val || "").toString().trim().toUpperCase();
-}
+const API =
+"https://script.google.com/macros/s/AKfycbzsQdXCZ8B08m3BsJa1xTWI02dNaIrzf3lBrE1x2Kbrt0QJrlQiba--H6pYf2JvIOSQOg/exec";
 
+// GET URL PARAM
 const params = new URLSearchParams(window.location.search);
-const currentId = clean(params.get("catalogue"));
 
-if (!currentId) {
-  document.body.innerHTML = "No catalogue selected";
+const currentId = params.get("catalogue");
+
+// NO CATALOGUE
+if(!currentId){
+
+  document.getElementById("data").innerHTML = `
+    <tr>
+      <td colspan="4">
+        No catalogue selected
+      </td>
+    </tr>
+  `;
 }
 
-fetch(CATALOGUE_API)
-.then(res => res.json())
-.then(catalogues => {
+// LOAD DATA
+async function loadCatalogue(){
 
-  const cat = catalogues.find(c => clean(c.CatalogueID) === currentId);
+  try{
 
-  if (!cat) {
-    document.body.innerHTML = "Catalogue not found";
-    return;
-  }
-
-  document.getElementById("catalogueName").innerText = cat.CatalogueName;
-
-  fetch(BRAND_API)
-  .then(res => res.json())
-  .then(brands => {
-
-    const brand = brands.find(b =>
-      clean(b["Brand ID"]) === clean(cat.BrandID)
+    const response = await fetch(
+      API + "?catalogue=" + currentId,
+      {
+        cache:"force-cache"
+      }
     );
 
-    if (brand) {
-      document.getElementById("brandName").innerText =
-        brand["Brand Name"];
+    const data = await response.json();
 
-      if (brand["Logo URL"]) {
-        document.getElementById("brandLogo").src =
-          brand["Logo URL"];
+    console.log(data);
+
+    // BRAND
+    if(data.brand){
+
+      document.getElementById("brandName").innerText =
+      data.brand["Brand Name"] || "";
+
+      const logo = data.brand["Logo URL"];
+
+      if(logo){
+
+        const img = document.getElementById("brandLogo");
+
+        img.loading = "lazy";
+
+        img.src = logo;
       }
     }
 
-  });
+    // CATALOGUE
+    if(data.catalogue){
 
-});
+      document.getElementById("catalogueName").innerText =
+      data.catalogue.CatalogueName || "Catalogue";
+    }
 
-fetch(VARIANT_API)
-.then(res => res.json())
-.then(data => {
+    // VARIANTS
+    renderVariants(data.variants || []);
 
-  const filtered = data.filter(row =>
-    clean(row.CatalogueID) === currentId
-  );
+  }
+  catch(err){
 
-  if (!filtered.length) {
-    document.getElementById("data").innerHTML =
-      "<tr><td colspan='4'>No data found</td></tr>";
+    console.error(err);
+
+    document.getElementById("data").innerHTML = `
+      <tr>
+        <td colspan="4">
+          Failed to load catalogue
+        </td>
+      </tr>
+    `;
+  }
+}
+
+// RENDER TABLE
+function renderVariants(variants){
+
+  const tbody = document.getElementById("data");
+
+  if(!variants.length){
+
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="4">
+          No variants found
+        </td>
+      </tr>
+    `;
+
     return;
   }
 
   let html = "";
 
-  filtered.forEach(p => {
+  for(let i=0;i<variants.length;i++){
+
+    const v = variants[i];
+
     html += `
       <tr>
-        <td>${p.VariantName || "-"}</td>
-        <td>${p.HSN || "-"}</td>
-        <td>${p.GST || "0"}</td>
-        <td>₹ ${Number(p.RRP || 0).toLocaleString("en-IN")}</td>
+
+        <td>
+          ${v.VariantName || "-"}
+        </td>
+
+        <td>
+          ${v.HSN || "-"}
+        </td>
+
+        <td>
+          ${v.GST || "-"}%
+        </td>
+
+        <td>
+          ₹ ${Number(v.RRP || 0).toLocaleString("en-IN")}
+        </td>
+
       </tr>
     `;
-  });
+  }
 
-  document.getElementById("data").innerHTML = html;
+  tbody.innerHTML = html;
+}
 
-});
+// START
+loadCatalogue();
+
 </script>
 
 </body>
