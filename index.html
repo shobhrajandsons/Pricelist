@@ -1,1 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
 
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Catalogue Pricelist</title>
+
+<link rel="preconnect" href="https://script.google.com">
+<link rel="dns-prefetch" href="https://script.google.com">
+
+<style>
+
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+body{
+  font-family:Arial,sans-serif;
+  background:#f5f5f5;
+  color:#222;
+}
+
+.container{
+  width:100%;
+  max-width:1400px;
+  margin:auto;
+  padding:15px;
+}
+
+.header{
+  background:white;
+  border-radius:12px;
+  padding:20px;
+  margin-bottom:20px;
+
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  flex-wrap:wrap;
+
+  box-shadow:0 2px 10px rgba(0,0,0,0.08);
+}
+
+.leftHeader{
+  display:flex;
+  align-items:center;
+  gap:15px;
+}
+
+#brandLogo{
+  width:80px;
+  height:80px;
+  object-fit:contain;
+}
+
+.headerText{
+  display:flex;
+  flex-direction:column;
+}
+
+#catalogueName{
+  font-size:28px;
+  font-weight:bold;
+}
+
+#brandName{
+  font-size:18px;
+  color:#666;
+  margin-top:5px;
+}
+
+.tableWrap{
+  background:white;
+  border-radius:12px;
+  overflow:auto;
+  box-shadow:0 2px 10px rgba(0,0,0,0.08);
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  table-layout:fixed;
+}
+
+th{
+  background:#111827;
+  color:white;
+  padding:14px;
+  text-align:center;
+}
+
+td{
+  padding:14px;
+  border-bottom:1px solid #ddd;
+  text-align:center;
+}
+
+tr:hover{
+  background:#f9f9f9;
+}
+
+.loading{
+  padding:30px;
+  text-align:center;
+}
+
+@media(max-width:768px){
+
+  #catalogueName{
+    font-size:22px;
+  }
+
+  #brandName{
+    font-size:16px;
+  }
+
+  th,td{
+    padding:10px;
+    font-size:14px;
+  }
+
+  #brandLogo{
+    width:60px;
+    height:60px;
+  }
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="header">
+
+    <div class="leftHeader">
+
+      <img
+        id="brandLogo"
+        src=""
+        alt="Logo"
+      >
+
+      <div class="headerText">
+
+        <div id="catalogueName">
+          Loading Catalogue...
+        </div>
+
+        <div id="brandName"></div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- TABLE -->
+  <div class="tableWrap">
+
+    <table>
+
+      <thead>
+
+        <tr>
+          <th>Variant</th>
+          <th>HSN</th>
+          <th>GST</th>
+          <th>RRP</th>
+        </tr>
+
+      </thead>
+
+      <tbody id="data">
+
+        <tr>
+          <td colspan="4" class="loading">
+            Loading catalogue...
+          </td>
+        </tr>
+
+      </tbody>
+
+    </table>
+
+  </div>
+
+</div>
+
+<script>
+
+const API =
+"https://script.google.com/macros/s/AKfycbzsQdXCZ8B08m3BsJa1xTWI02dNaIrzf3lBrE1x2Kbrt0QJrlQiba--H6pYf2JvIOSQOg/exec";
+
+// URL PARAM
+const params =
+new URLSearchParams(window.location.search);
+
+const currentId =
+params.get("catalogue");
+
+const tbody =
+document.getElementById("data");
+
+// NO PARAM
+if(!currentId){
+
+  tbody.innerHTML = `
+    <tr>
+      <td colspan="4">
+        No catalogue selected
+      </td>
+    </tr>
+  `;
+
+}
+else{
+
+  loadCatalogue();
+}
+
+// LOAD DATA
+async function loadCatalogue(){
+
+  try{
+
+    const response = await fetch(
+      API + "?catalogue=" + encodeURIComponent(currentId)
+    );
+
+    const data = await response.json();
+
+    console.log(data);
+
+    // BRAND
+    if(data.brand){
+
+      document.getElementById("brandName").innerText =
+      data.brand["Brand Name"] || "";
+
+      const logo =
+      data.brand["Logo URL"];
+
+      if(logo){
+
+        document.getElementById("brandLogo").src =
+        logo;
+      }
+    }
+
+    // CATALOGUE
+    if(data.catalogue){
+
+      document.getElementById("catalogueName").innerText =
+      data.catalogue.CatalogueName || "Catalogue";
+    }
+
+    // VARIANTS
+    renderVariants(data.variants || []);
+
+  }
+  catch(err){
+
+    console.error(err);
+
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="4">
+          Failed to load catalogue
+        </td>
+      </tr>
+    `;
+  }
+}
+
+// RENDER TABLE
+function renderVariants(variants){
+
+  if(!variants.length){
+
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="4">
+          No variants found
+        </td>
+      </tr>
+    `;
+
+    return;
+  }
+
+  let html = "";
+
+  variants.forEach(v => {
+
+    html += `
+      <tr>
+
+        <td>
+          ${v.VariantName || "-"}
+        </td>
+
+        <td>
+          ${v.HSN || "-"}
+        </td>
+
+        <td>
+          ${v.GST || "-"}%
+        </td>
+
+        <td>
+          ₹ ${Number(v.RRP || 0).toLocaleString("en-IN")}
+        </td>
+
+      </tr>
+    `;
+  });
+
+  tbody.innerHTML = html;
+}
+
+</script>
+
+</body>
+</html>
