@@ -147,13 +147,38 @@ td{
 
 .rrpCell{
 
-  text-align:right;
-
-  padding-right:30px;
+  font-variant-numeric:tabular-nums;
 
   white-space:nowrap;
+}
 
-  font-variant-numeric: tabular-nums;
+.priceWrap{
+
+  width:140px;
+
+  margin:auto;
+
+  display:flex;
+
+  justify-content:space-between;
+
+  align-items:center;
+}
+
+.priceSymbol{
+
+  min-width:20px;
+
+  text-align:left;
+
+  font-weight:600;
+}
+
+.priceValue{
+
+  min-width:90px;
+
+  text-align:right;
 }
 
 tr:hover{
@@ -197,8 +222,8 @@ tr:hover{
     padding-left:10px;
   }
 
-  .rrpCell{
-    padding-right:15px;
+  .priceWrap{
+    width:120px;
   }
 
 }
@@ -406,7 +431,19 @@ function renderVariants(variants){
         </td>
 
         <td class="rrpCell">
-          ₹ ${Number(v.RRP || 0).toLocaleString("en-IN")}
+
+          <div class="priceWrap">
+
+            <span class="priceSymbol">
+              ₹
+            </span>
+
+            <span class="priceValue">
+              ${Number(v.RRP || 0).toLocaleString("en-IN")}
+            </span>
+
+          </div>
+
         </td>
 
       </tr>
