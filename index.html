@@ -33,93 +33,157 @@ body{
 }
 
 .header{
+
   background:white;
+
   border-radius:12px;
+
   padding:20px;
+
   margin-bottom:20px;
 
   display:flex;
+
   justify-content:space-between;
+
   align-items:center;
+
   flex-wrap:wrap;
 
   box-shadow:0 2px 10px rgba(0,0,0,0.08);
 }
 
 .leftHeader{
+
   display:flex;
+
   align-items:center;
+
   gap:15px;
 }
 
 #brandLogo{
+
   width:80px;
+
   height:80px;
+
   object-fit:contain;
+
+  display:none;
 }
 
 .headerText{
+
   display:flex;
+
   flex-direction:column;
 }
 
 #catalogueName{
+
   font-size:28px;
+
   font-weight:bold;
 }
 
 #brandName{
+
   font-size:18px;
+
   color:#666;
+
   margin-top:5px;
 }
 
 .tableWrap{
+
   background:white;
+
   border-radius:12px;
+
   overflow:auto;
+
   box-shadow:0 2px 10px rgba(0,0,0,0.08);
 }
 
 table{
+
   width:100%;
+
   border-collapse:collapse;
+
   table-layout:fixed;
 }
 
 th{
+
   background:#111827;
+
   color:white;
+
   padding:14px;
+
   text-align:center;
 }
 
 td{
+
   padding:14px;
+
   border-bottom:1px solid #ddd;
+
   text-align:center;
 }
 
+.variantCell{
+
+  text-align:left;
+
+  padding-left:20px;
+
+  font-weight:500;
+}
+
+.rrpCell{
+
+  text-align:right;
+
+  padding-right:30px;
+
+  white-space:nowrap;
+
+  font-variant-numeric: tabular-nums;
+}
+
 tr:hover{
+
   background:#f9f9f9;
 }
 
 .loading{
+
   padding:30px;
+
   text-align:center;
 }
 
 @media(max-width:768px){
+
+  .container{
+    padding:10px;
+  }
 
   #catalogueName{
     font-size:22px;
   }
 
   #brandName{
-    font-size:16px;
+    font-size:15px;
   }
 
-  th,td{
+  th,
+  td{
     padding:10px;
     font-size:14px;
   }
@@ -127,6 +191,14 @@ tr:hover{
   #brandLogo{
     width:60px;
     height:60px;
+  }
+
+  .variantCell{
+    padding-left:10px;
+  }
+
+  .rrpCell{
+    padding-right:15px;
   }
 
 }
@@ -172,10 +244,15 @@ tr:hover{
       <thead>
 
         <tr>
+
           <th>Variant</th>
+
           <th>HSN</th>
+
           <th>GST</th>
+
           <th>RRP</th>
+
         </tr>
 
       </thead>
@@ -183,9 +260,11 @@ tr:hover{
       <tbody id="data">
 
         <tr>
+
           <td colspan="4" class="loading">
             Loading catalogue...
           </td>
+
         </tr>
 
       </tbody>
@@ -250,10 +329,19 @@ async function loadCatalogue(){
       const logo =
       data.brand["Logo URL"];
 
+      const logoElement =
+      document.getElementById("brandLogo");
+
       if(logo){
 
-        document.getElementById("brandLogo").src =
-        logo;
+        logoElement.src = logo;
+
+        logoElement.style.display = "block";
+
+      }
+      else{
+
+        logoElement.style.display = "none";
       }
     }
 
@@ -305,7 +393,7 @@ function renderVariants(variants){
     html += `
       <tr>
 
-        <td>
+        <td class="variantCell">
           ${v.VariantName || "-"}
         </td>
 
@@ -317,7 +405,7 @@ function renderVariants(variants){
           ${v.GST || "-"}%
         </td>
 
-        <td>
+        <td class="rrpCell">
           ₹ ${Number(v.RRP || 0).toLocaleString("en-IN")}
         </td>
 
