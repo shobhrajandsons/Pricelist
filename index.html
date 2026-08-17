@@ -32,168 +32,150 @@ body{
   padding:15px;
 }
 
+/* =========================
+   HEADER
+========================= */
+
 .header{
-
   background:white;
-
   border-radius:12px;
-
   padding:20px;
-
   margin-bottom:20px;
 
   display:flex;
-
   justify-content:space-between;
-
   align-items:center;
-
   flex-wrap:wrap;
 
   box-shadow:0 2px 10px rgba(0,0,0,0.08);
 }
 
 .leftHeader{
-
   display:flex;
-
   align-items:center;
-
   gap:15px;
 }
 
+/* Logo is hidden until successfully loaded */
 #brandLogo{
-
   width:80px;
-
   height:80px;
-
   object-fit:contain;
-
   display:none;
+  border-radius:6px;
 }
 
 .headerText{
-
   display:flex;
-
   flex-direction:column;
 }
 
 #catalogueName{
-
   font-size:28px;
-
   font-weight:bold;
 }
 
 #brandName{
-
   font-size:18px;
-
   color:#666;
-
   margin-top:5px;
 }
 
+/* =========================
+   TABLE
+========================= */
+
 .tableWrap{
-
   background:white;
-
   border-radius:12px;
-
   overflow:auto;
 
   box-shadow:0 2px 10px rgba(0,0,0,0.08);
 }
 
 table{
-
   width:100%;
-
   border-collapse:collapse;
-
   table-layout:fixed;
 }
 
 th{
-
   background:#111827;
-
   color:white;
-
   padding:14px;
-
   text-align:center;
 }
 
 td{
-
   padding:14px;
-
   border-bottom:1px solid #ddd;
-
   text-align:center;
 }
 
 .variantCell{
-
   text-align:left;
-
   padding-left:20px;
-
   font-weight:500;
 }
 
 .rrpCell{
-
   font-variant-numeric:tabular-nums;
-
   white-space:nowrap;
 }
 
+/* =========================
+   RRP ALIGNMENT
+========================= */
+
 .priceWrap{
-
   width:90px;
-
   margin:auto;
 
-  display:flex;
+  display:grid;
 
-  justify-content:space-between;
+  grid-template-columns:18px 1fr;
 
   align-items:center;
 
-  gap:8px;
+  column-gap:3px;
 }
 
 .priceSymbol{
-
-  min-width:14px;
-
   text-align:left;
-
   font-weight:600;
 }
 
 .priceValue{
-
-  min-width:60px;
-
   text-align:right;
+  font-variant-numeric:tabular-nums;
 }
 
-tr:hover{
+/* =========================
+   HOVER
+========================= */
 
+tr:hover{
   background:#f9f9f9;
 }
 
 .loading{
-
   padding:30px;
-
   text-align:center;
 }
+
+/* =========================
+   ERROR
+========================= */
+
+.errorMessage{
+  padding:30px;
+  text-align:center;
+  color:#555;
+}
+
+/* =========================
+   MOBILE
+========================= */
 
 @media(max-width:768px){
 
@@ -226,10 +208,8 @@ tr:hover{
 
   .priceWrap{
     width:80px;
-  }
-
-  .priceValue{
-    min-width:55px;
+    grid-template-columns:17px 1fr;
+    column-gap:2px;
   }
 
 }
@@ -242,15 +222,18 @@ tr:hover{
 
 <div class="container">
 
-  <!-- HEADER -->
+  <!-- =========================
+       HEADER
+  ========================== -->
+
   <div class="header">
 
     <div class="leftHeader">
 
       <img
         id="brandLogo"
-        src=""
-        alt="Logo"
+        alt=""
+        aria-hidden="true"
       >
 
       <div class="headerText">
@@ -267,7 +250,11 @@ tr:hover{
 
   </div>
 
-  <!-- TABLE -->
+
+  <!-- =========================
+       TABLE
+  ========================== -->
+
   <div class="tableWrap">
 
     <table>
@@ -306,134 +293,578 @@ tr:hover{
 
 </div>
 
+
 <script>
+
+/* =========================================================
+   API
+========================================================= */
 
 const API =
 "https://script.google.com/macros/s/AKfycbwpXqyJz5-DM5pKgbQ-1ubzcBDEXT4Qt604FUMYggjmwWv45Fbv1M6ABxB80GF_5Q/exec";
 
-// URL PARAM
+
+/* =========================================================
+   URL PARAMETER
+========================================================= */
+
 const params =
 new URLSearchParams(window.location.search);
 
 const currentId =
-params.get("catalogue");
+(params.get("catalogue") || "").trim();
+
+
+/* =========================================================
+   DOM
+========================================================= */
 
 const tbody =
 document.getElementById("data");
 
-// NO PARAM
+const logoElement =
+document.getElementById("brandLogo");
+
+const brandNameElement =
+document.getElementById("brandName");
+
+const catalogueNameElement =
+document.getElementById("catalogueName");
+
+
+/* =========================================================
+   START
+========================================================= */
+
 if(!currentId){
 
-  tbody.innerHTML = `
-    <tr>
-      <td colspan="4">
-        No catalogue selected
-      </td>
-    </tr>
-  `;
+  showMessage("No catalogue selected");
 
 }
 else{
 
   loadCatalogue();
+
 }
 
-// LOAD DATA
+
+/* =========================================================
+   LOAD CATALOGUE
+========================================================= */
+
 async function loadCatalogue(){
 
   try{
 
-    const response = await fetch(
-      API + "?catalogue=" + encodeURIComponent(currentId)
-    );
+    const response =
+      await fetch(
+        API +
+        "?catalogue=" +
+        encodeURIComponent(currentId),
+        {
+          method:"GET",
+          cache:"no-store"
+        }
+      );
 
-    const data = await response.json();
 
-    console.log(data);
+    if(!response.ok){
 
-    // BRAND
+      throw new Error(
+        "API returned HTTP " + response.status
+      );
+
+    }
+
+
+    const data =
+      await response.json();
+
+
+    console.log("Catalogue API:", data);
+
+
+    /* =========================
+       API ERROR
+    ========================== */
+
+    if(data.success === false){
+
+      showMessage(
+        data.error || "Catalogue not found"
+      );
+
+      return;
+
+    }
+
+
+    /* =========================
+       BRAND
+    ========================== */
+
     if(data.brand){
 
-      document.getElementById("brandName").innerText =
-      data.brand["Brand Name"] || "";
+      const brandName =
+        data.brand["Brand Name"] ||
+        data.brand.BrandName ||
+        "";
+
+      brandNameElement.innerText =
+        brandName;
+
 
       const logo =
-      data.brand["Logo URL"];
+        data.brand["Logo URL"] ||
+        data.brand.LogoURL ||
+        "";
 
-      const logoElement =
-      document.getElementById("brandLogo");
 
-      if(logo){
+      /*
+       * IMPORTANT:
+       * Do not display the image until
+       * we know that it has successfully loaded.
+       */
 
-        logoElement.src = logo;
+      loadLogo(logo);
 
-        logoElement.style.display = "block";
+    }
+    else{
 
-      }
-      else{
+      hideLogo();
 
-        logoElement.style.display = "none";
-      }
     }
 
-    // CATALOGUE
+
+    /* =========================
+       CATALOGUE
+    ========================== */
+
     if(data.catalogue){
 
-      document.getElementById("catalogueName").innerText =
-      data.catalogue.CatalogueName || "Catalogue";
+      const catalogueName =
+        data.catalogue.CatalogueName ||
+        data.catalogue["Catalogue Name"] ||
+        "Catalogue";
+
+      catalogueNameElement.innerText =
+        catalogueName;
+
+    }
+    else{
+
+      catalogueNameElement.innerText =
+        "Catalogue";
+
     }
 
-    // VARIANTS
-    renderVariants(data.variants || []);
+
+    /* =========================
+       VARIANTS
+    ========================== */
+
+    renderVariants(
+      Array.isArray(data.variants)
+        ? data.variants
+        : []
+    );
 
   }
+
   catch(err){
 
-    console.error(err);
+    console.error(
+      "Catalogue loading error:",
+      err
+    );
 
-    tbody.innerHTML = `
-      <tr>
-        <td colspan="4">
-          Failed to load catalogue
-        </td>
-      </tr>
-    `;
+    showMessage(
+      "Failed to load catalogue"
+    );
+
   }
+
 }
 
-// RENDER TABLE
+
+/* =========================================================
+   LOGO LOADER
+========================================================= */
+
+function loadLogo(source){
+
+  /*
+   * Always start hidden.
+   * This prevents broken-image icons.
+   */
+
+  hideLogo();
+
+
+  if(!source){
+
+    return;
+
+  }
+
+
+  source =
+    String(source).trim();
+
+
+  if(!source){
+
+    return;
+
+  }
+
+
+  /*
+   * If the cell contains only a filename,
+   * we cannot know which Google Drive file
+   * it belongs to.
+   *
+   * Do not show a broken image.
+   */
+
+  if(
+    !source.startsWith("http://") &&
+    !source.startsWith("https://") &&
+    !source.startsWith("data:")
+  ){
+
+    console.warn(
+      "Logo value is not a URL:",
+      source
+    );
+
+    return;
+
+  }
+
+
+  /*
+   * Generate possible URLs.
+   */
+
+  const urls =
+    getLogoCandidates(source);
+
+
+  tryLogoCandidates(urls, 0);
+
+}
+
+
+/* =========================================================
+   GENERATE LOGO CANDIDATES
+========================================================= */
+
+function getLogoCandidates(source){
+
+  const candidates = [];
+
+
+  /*
+   * Google Drive FILE ID
+   */
+
+  const driveId =
+    extractDriveFileId(source);
+
+
+  if(driveId){
+
+    /*
+     * First choice:
+     * Google Drive thumbnail.
+     *
+     * This works well for most
+     * PNG/JPG/WEBP/SVG image files.
+     */
+
+    candidates.push(
+      "https://drive.google.com/thumbnail?id=" +
+      encodeURIComponent(driveId) +
+      "&sz=w1000"
+    );
+
+
+    /*
+     * Second choice:
+     * Direct Drive view.
+     */
+
+    candidates.push(
+      "https://drive.google.com/uc?export=view&id=" +
+      encodeURIComponent(driveId)
+    );
+
+
+    /*
+     * Third choice:
+     * Drive download endpoint.
+     */
+
+    candidates.push(
+      "https://drive.google.com/uc?id=" +
+      encodeURIComponent(driveId)
+    );
+
+  }
+  else{
+
+    /*
+     * Normal HTTPS image.
+     */
+
+    candidates.push(source);
+
+  }
+
+
+  return removeDuplicates(candidates);
+
+}
+
+
+/* =========================================================
+   EXTRACT GOOGLE DRIVE FILE ID
+========================================================= */
+
+function extractDriveFileId(url){
+
+  if(!url){
+
+    return null;
+
+  }
+
+
+  /*
+   * /file/d/FILE_ID/view
+   */
+
+  let match =
+    url.match(
+      /\/file\/d\/([a-zA-Z0-9_-]+)/
+    );
+
+
+  if(match){
+
+    return match[1];
+
+  }
+
+
+  /*
+   * /d/FILE_ID
+   */
+
+  match =
+    url.match(
+      /\/d\/([a-zA-Z0-9_-]+)/
+    );
+
+
+  if(match){
+
+    return match[1];
+
+  }
+
+
+  /*
+   * ?id=FILE_ID
+   */
+
+  match =
+    url.match(
+      /[?&]id=([a-zA-Z0-9_-]+)/
+    );
+
+
+  if(match){
+
+    return match[1];
+
+  }
+
+
+  /*
+   * Google Drive thumbnail URL
+   */
+
+  match =
+    url.match(
+      /thumbnail\?id=([a-zA-Z0-9_-]+)/
+    );
+
+
+  if(match){
+
+    return match[1];
+
+  }
+
+
+  return null;
+
+}
+
+
+/* =========================================================
+   TRY LOGO URLS
+========================================================= */
+
+function tryLogoCandidates(urls, index){
+
+  if(
+    !urls ||
+    index >= urls.length
+  ){
+
+    /*
+     * All attempts failed.
+     * Keep logo hidden.
+     */
+
+    hideLogo();
+
+    return;
+
+  }
+
+
+  const testImage =
+    new Image();
+
+
+  testImage.onload =
+    function(){
+
+      /*
+       * Only display after successful
+       * image loading.
+       */
+
+      logoElement.src =
+        urls[index];
+
+      logoElement.style.display =
+        "block";
+
+    };
+
+
+  testImage.onerror =
+    function(){
+
+      /*
+       * Try next URL.
+       */
+
+      tryLogoCandidates(
+        urls,
+        index + 1
+      );
+
+    };
+
+
+  testImage.src =
+    urls[index];
+
+}
+
+
+/* =========================================================
+   HIDE LOGO
+========================================================= */
+
+function hideLogo(){
+
+  logoElement.style.display =
+    "none";
+
+  logoElement.removeAttribute("src");
+
+}
+
+
+/* =========================================================
+   REMOVE DUPLICATES
+========================================================= */
+
+function removeDuplicates(array){
+
+  return [
+    ...new Set(array)
+  ];
+
+}
+
+
+/* =========================================================
+   RENDER VARIANTS
+========================================================= */
+
 function renderVariants(variants){
 
   if(!variants.length){
 
-    tbody.innerHTML = `
-      <tr>
-        <td colspan="4">
-          No variants found
-        </td>
-      </tr>
-    `;
+    showMessage(
+      "No variants found"
+    );
 
     return;
+
   }
+
 
   let html = "";
 
-  variants.forEach(v => {
+
+  variants.forEach(function(v){
+
+    const variantName =
+      escapeHTML(
+        v.VariantName ||
+        v["Variant Name"] ||
+        "-"
+      );
+
+
+    const hsn =
+      escapeHTML(
+        v.HSN ||
+        "-"
+      );
+
+
+    const gst =
+      formatGST(v.GST);
+
+
+    const rrp =
+      formatPrice(v.RRP);
+
 
     html += `
+
       <tr>
 
         <td class="variantCell">
-          ${v.VariantName || "-"}
+          ${variantName}
         </td>
 
         <td>
-          ${v.HSN || "-"}
+          ${hsn}
         </td>
 
         <td>
-          ${v.GST || "-"}%
+          ${gst}
         </td>
 
         <td class="rrpCell">
@@ -445,7 +876,7 @@ function renderVariants(variants){
             </span>
 
             <span class="priceValue">
-              ${Number(v.RRP || 0).toLocaleString("en-IN")}
+              ${rrp}
             </span>
 
           </div>
@@ -453,13 +884,145 @@ function renderVariants(variants){
         </td>
 
       </tr>
+
     `;
+
   });
 
-  tbody.innerHTML = html;
+
+  tbody.innerHTML =
+    html;
+
+}
+
+
+/* =========================================================
+   FORMAT GST
+========================================================= */
+
+function formatGST(value){
+
+  if(
+    value === null ||
+    value === undefined ||
+    value === ""
+  ){
+
+    return "-";
+
+  }
+
+
+  const number =
+    Number(value);
+
+
+  if(
+    Number.isNaN(number)
+  ){
+
+    return escapeHTML(
+      String(value)
+    );
+
+  }
+
+
+  return (
+    number.toLocaleString("en-IN") +
+    "%"
+  );
+
+}
+
+
+/* =========================================================
+   FORMAT PRICE
+========================================================= */
+
+function formatPrice(value){
+
+  if(
+    value === null ||
+    value === undefined ||
+    value === ""
+  ){
+
+    return "-";
+
+  }
+
+
+  const number =
+    Number(
+      String(value)
+        .replace(/,/g,"")
+        .replace(/[₹\s]/g,"")
+    );
+
+
+  if(
+    Number.isNaN(number)
+  ){
+
+    return escapeHTML(
+      String(value)
+    );
+
+  }
+
+
+  return number.toLocaleString(
+    "en-IN",
+    {
+      maximumFractionDigits:2
+    }
+  );
+
+}
+
+
+/* =========================================================
+   SAFE HTML
+========================================================= */
+
+function escapeHTML(value){
+
+  return String(value)
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+
+}
+
+
+/* =========================================================
+   MESSAGE
+========================================================= */
+
+function showMessage(message){
+
+  tbody.innerHTML = `
+
+    <tr>
+
+      <td
+        colspan="4"
+        class="errorMessage"
+      >
+        ${escapeHTML(message)}
+      </td>
+
+    </tr>
+
+  `;
+
 }
 
 </script>
 
 </body>
+
 </html>
