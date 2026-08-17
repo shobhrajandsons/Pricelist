@@ -53,16 +53,20 @@ body{
 .leftHeader{
   display:flex;
   align-items:center;
-  gap:15px;
+  gap:20px;
 }
 
-/* Logo is hidden until successfully loaded */
+/* =========================
+   BRAND LOGO
+========================= */
+
 #brandLogo{
-  width:80px;
-  height:80px;
+  width:120px;
+  height:120px;
   object-fit:contain;
   display:none;
   border-radius:6px;
+  flex-shrink:0;
 }
 
 .headerText{
@@ -124,7 +128,7 @@ td{
 }
 
 /* =========================
-   RRP ALIGNMENT
+   RRP
 ========================= */
 
 .priceWrap{
@@ -163,10 +167,6 @@ tr:hover{
   text-align:center;
 }
 
-/* =========================
-   ERROR
-========================= */
-
 .errorMessage{
   padding:30px;
   text-align:center;
@@ -181,6 +181,14 @@ tr:hover{
 
   .container{
     padding:10px;
+  }
+
+  .header{
+    padding:15px;
+  }
+
+  .leftHeader{
+    gap:15px;
   }
 
   #catalogueName{
@@ -198,8 +206,8 @@ tr:hover{
   }
 
   #brandLogo{
-    width:60px;
-    height:60px;
+    width:90px;
+    height:90px;
   }
 
   .variantCell{
@@ -210,6 +218,42 @@ tr:hover{
     width:80px;
     grid-template-columns:17px 1fr;
     column-gap:2px;
+  }
+
+}
+
+
+/* =========================
+   SMALL MOBILE
+========================= */
+
+@media(max-width:420px){
+
+  .header{
+    padding:12px;
+  }
+
+  .leftHeader{
+    gap:12px;
+  }
+
+  #brandLogo{
+    width:75px;
+    height:75px;
+  }
+
+  #catalogueName{
+    font-size:20px;
+  }
+
+  #brandName{
+    font-size:14px;
+  }
+
+  th,
+  td{
+    padding:8px;
+    font-size:13px;
   }
 
 }
@@ -420,12 +464,6 @@ async function loadCatalogue(){
         "";
 
 
-      /*
-       * IMPORTANT:
-       * Do not display the image until
-       * we know that it has successfully loaded.
-       */
-
       loadLogo(logo);
 
     }
@@ -493,11 +531,6 @@ async function loadCatalogue(){
 
 function loadLogo(source){
 
-  /*
-   * Always start hidden.
-   * This prevents broken-image icons.
-   */
-
   hideLogo();
 
 
@@ -520,11 +553,9 @@ function loadLogo(source){
 
 
   /*
-   * If the cell contains only a filename,
-   * we cannot know which Google Drive file
-   * it belongs to.
-   *
-   * Do not show a broken image.
+   * If only a filename is present,
+   * there is no way for the browser to
+   * determine which Drive file it belongs to.
    */
 
   if(
@@ -543,10 +574,6 @@ function loadLogo(source){
   }
 
 
-  /*
-   * Generate possible URLs.
-   */
-
   const urls =
     getLogoCandidates(source);
 
@@ -557,17 +584,13 @@ function loadLogo(source){
 
 
 /* =========================================================
-   GENERATE LOGO CANDIDATES
+   GOOGLE DRIVE / IMAGE URL HANDLER
 ========================================================= */
 
 function getLogoCandidates(source){
 
   const candidates = [];
 
-
-  /*
-   * Google Drive FILE ID
-   */
 
   const driveId =
     extractDriveFileId(source);
@@ -576,11 +599,7 @@ function getLogoCandidates(source){
   if(driveId){
 
     /*
-     * First choice:
-     * Google Drive thumbnail.
-     *
-     * This works well for most
-     * PNG/JPG/WEBP/SVG image files.
+     * Google Drive thumbnail
      */
 
     candidates.push(
@@ -591,8 +610,7 @@ function getLogoCandidates(source){
 
 
     /*
-     * Second choice:
-     * Direct Drive view.
+     * Google Drive direct view
      */
 
     candidates.push(
@@ -602,8 +620,7 @@ function getLogoCandidates(source){
 
 
     /*
-     * Third choice:
-     * Drive download endpoint.
+     * Google Drive direct download
      */
 
     candidates.push(
@@ -615,7 +632,7 @@ function getLogoCandidates(source){
   else{
 
     /*
-     * Normal HTTPS image.
+     * Normal HTTPS image URL
      */
 
     candidates.push(source);
@@ -629,7 +646,7 @@ function getLogoCandidates(source){
 
 
 /* =========================================================
-   EXTRACT GOOGLE DRIVE FILE ID
+   EXTRACT DRIVE FILE ID
 ========================================================= */
 
 function extractDriveFileId(url){
@@ -725,11 +742,6 @@ function tryLogoCandidates(urls, index){
     index >= urls.length
   ){
 
-    /*
-     * All attempts failed.
-     * Keep logo hidden.
-     */
-
     hideLogo();
 
     return;
@@ -744,11 +756,6 @@ function tryLogoCandidates(urls, index){
   testImage.onload =
     function(){
 
-      /*
-       * Only display after successful
-       * image loading.
-       */
-
       logoElement.src =
         urls[index];
 
@@ -760,10 +767,6 @@ function tryLogoCandidates(urls, index){
 
   testImage.onerror =
     function(){
-
-      /*
-       * Try next URL.
-       */
 
       tryLogoCandidates(
         urls,
